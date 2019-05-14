@@ -5,11 +5,15 @@
 ## Usage
 
 ```bash
-Usage of vault-to-env:
+Usage of /var/folders/tq/1bqkd1_10_v3tg_fb40xjkx80000gn/T/go-build338785307/b001/exe/main:
+  -a string
+    	vault address (default "http://localhost:8200")
   -e value
-    	environment variable to fetch
+    	environment variables to fetch
   -o string
     	output file path
+  -t string
+    	vault token
 ```
 
 ## Examples
