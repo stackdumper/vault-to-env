@@ -41,24 +41,22 @@ version          1
 
 # read secrets and output them into stdout
 # if you use KV v2, append /data/ before secret path
-$ go run main.go
+$ vte read
     --auth-path /auth/userpass/login/tester
     --auth-data password=tester
-      read
-        --vars FOO=/secret/data/hello#foo
-        --vars EXCITED=/secret/data/hello#excited
+    --vars FOO=/secret/data/hello#foo
+    --vars EXCITED=/secret/data/hello#excited
 export FOO="world"
 export EXCITED="yes"
 
 
 # read secrets and output them to file
-$ ➜ go run main.go
+$ ➜ vte read
     --auth-path /auth/userpass/login/tester
     --auth-data password=tester
-      read
-        --vars FOO=/secret/data/hello#foo
-        --vars EXCITED=/secret/data/hello#excited
-        --out /tmp/hello.sh
+    --vars FOO=/secret/data/hello#foo
+    --vars EXCITED=/secret/data/hello#excited
+    --out /tmp/hello.sh
 
 # get generated file contents
 $ cat /tmp/hello.sh
