@@ -68,5 +68,5 @@ export EXCITED="yes"
 
 <br />
 
-## LICENSE
+## License
 [MIT](./license)
