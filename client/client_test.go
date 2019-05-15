@@ -9,9 +9,10 @@ import (
 func TestClient(t *testing.T) {
 	client, err := NewClient(&Config{
 		VaultAddress: "http://localhost:8200",
-		VaultToken:   "s.QqzQSLhsSPcQxIBu0ZE56qMV",
 	})
 	assert.NoError(t, err)
+
+	client.SetToken("s.STh7XGnk3krBo18GqLepPmVs")
 
 	t.Run("Read", func(t *testing.T) {
 		t.Run("OK", func(t *testing.T) {

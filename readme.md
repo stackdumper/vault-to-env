@@ -2,19 +2,29 @@
 
 VTE reads secrets from Hashicorp Vault and outputs them as environment variables into stdout or file.
 
+<br />
+
 ## Usage
 
-```bash
-Usage of vte:
-  -a string
-    	vault address (default "http://localhost:8200")
-  -e value
-    	environment variables to fetch
-  -o string
-    	output file path
-  -t string
-    	vault token
+#### Read
+Read secrets and output them as env variables
+
 ```
+Usage:
+  vte read [flags]
+
+Flags:
+  -h, --help           help for read
+      --out string
+      --vars strings
+
+Global Flags:
+      --address string      Vault address (default "http://localhost:8200")
+      --auth-data strings   Vault auth data
+      --auth-path string    Vault auth path
+```
+
+<br />
 
 ## Examples
 
@@ -28,15 +38,35 @@ deletion_time    n/a
 destroyed        false
 version          1
 
-# read a secret and output it into stdout
+
+# read secrets and output them into stdout
 # if you use KV v2, append /data/ before secret path
-$ vte -e FOO=/secret/data/hello#foo -e EXCITED=/secret/data/hello#excited
+$ go run main.go
+    --auth-path /auth/userpass/login/tester
+    --auth-data password=tester
+      read
+        --vars FOO=/secret/data/hello#foo
+        --vars EXCITED=/secret/data/hello#excited
 export FOO="world"
 export EXCITED="yes"
 
-# read a secret and output it to file
-$ vte -e FOO=/secret/data/hello#foo -e EXCITED=/secret/data/hello#excited -o /tmp/hello.sh
+
+# read secrets and output them to file
+$ ➜ go run main.go
+    --auth-path /auth/userpass/login/tester
+    --auth-data password=tester
+      read
+        --vars FOO=/secret/data/hello#foo
+        --vars EXCITED=/secret/data/hello#excited
+        --out /tmp/hello.sh
+
+# get generated file contents
 $ cat /tmp/hello.sh
 export FOO="world"
 export EXCITED="yes"
 ```
+
+<br />
+
+## LICENSE
+[MIT](./license)

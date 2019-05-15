@@ -39,27 +39,51 @@ type ReadResult struct {
 	Value    string
 	Warnings []string
 	Error    error
+	LeaseID  string
 }
 
-func (client Client) Read(path string, key string) ReadResult {
-	secret, err := client.api.Logical().Read(path)
-	if err != nil {
-		return ReadResult{"", nil, err}
-	}
-
-	if secret == nil {
-		return ReadResult{"", nil, fmt.Errorf("could not find a secret on path %s", path)}
-	}
-
+// getSecretDataKey extracts a key as a string from a given secret
+func (client Client) getSecretDataKey(secret *api.Secret, key string) (string, error) {
 	secrets, ok := secret.Data["data"].(map[string]interface{})
 	if !ok {
-		return ReadResult{"", secret.Warnings, fmt.Errorf("could read secret data on path %s", path)}
+		return "", fmt.Errorf("could not cast secret data to map[string]interface{}")
 	}
 
 	value, ok := secrets[key].(string)
 	if !ok {
-		return ReadResult{"", secret.Warnings, fmt.Errorf("could not cast key %s on path %s to value", key, path)}
+		return "", fmt.Errorf(`could not cast secret key "%s" to string`, key)
 	}
 
-	return ReadResult{value, secret.Warnings, nil}
+	return value, nil
+}
+
+// SetToken is used to set auth token
+func (client Client) SetToken(token string) {
+	client.api.SetToken(token)
+}
+
+// Auth is used to perform generic authention against a given path
+func (client Client) Auth(path string, data map[string]interface{}) (string, error) {
+	secret, err := client.api.Logical().Write(path, data)
+	if err != nil {
+		return "", err
+	}
+
+	return secret.Auth.ClientToken, nil
+}
+
+// Read is used to read secrets
+func (client Client) Read(path string, key string) ReadResult {
+	secret, err := client.api.Logical().Read(path)
+	if err != nil {
+		return ReadResult{"", nil, err, ""}
+	}
+
+	if secret == nil {
+		return ReadResult{"", nil, fmt.Errorf("could not find a secret on path %s", path), ""}
+	}
+
+	value, err := client.getSecretDataKey(secret, key)
+
+	return ReadResult{value, secret.Warnings, err, secret.LeaseID}
 }
