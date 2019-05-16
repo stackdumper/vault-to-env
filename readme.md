@@ -15,8 +15,8 @@ Usage:
 
 Flags:
   -h, --help           help for read
-      --out string
-      --vars strings
+      --save-leases    save secret leases
+      --vars strings   list of vars to read
 
 Global Flags:
       --address string      Vault address (default "http://localhost:8200")
@@ -46,20 +46,6 @@ $ vte read
     --auth-data password=tester
     --vars FOO=/secret/data/hello#foo
     --vars EXCITED=/secret/data/hello#excited
-export FOO="world"
-export EXCITED="yes"
-
-
-# read secrets and output them to file
-$ ➜ vte read
-    --auth-path /auth/userpass/login/tester
-    --auth-data password=tester
-    --vars FOO=/secret/data/hello#foo
-    --vars EXCITED=/secret/data/hello#excited
-    --out /tmp/hello.sh
-
-# get generated file contents
-$ cat /tmp/hello.sh
 export FOO="world"
 export EXCITED="yes"
 ```

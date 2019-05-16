@@ -2,24 +2,25 @@ package command
 
 import (
 	"fmt"
-	"io/ioutil"
 	"log"
 
 	"github.com/spf13/cobra"
 )
 
 var saveFlags struct {
-	vars []string
-	out  string
+	vars       []string
+	saveLeases bool
 }
 
 func init() {
-	saveCmd.Flags().StringSliceVar(&saveFlags.vars, "vars", []string{}, "")
-	saveCmd.Flags().StringVar(&saveFlags.out, "out", "", "")
+	saveCmd.Flags().StringSliceVar(&saveFlags.vars, "vars", []string{}, "list of vars to read")
+	saveCmd.Flags().BoolVar(&saveFlags.saveLeases, "save-leases", false, "save secret leases")
 }
 
-type Var struct {
-	Var, Path, Key, Value string
+type ResultVar struct {
+	// Input: "Name=Path#Key"
+	// Output: "export Name=Value"
+	Name, Path, Key, Value, Lease string
 }
 
 // Read secrets and output them as env variables
@@ -27,50 +28,56 @@ var saveCmd = &cobra.Command{
 	Use:   "read",
 	Short: "Read secrets and output them as env variables",
 	Run: func(cmd *cobra.Command, args []string) {
-		// prepare args
-		var vars = make([]Var, len(saveFlags.vars))
-		for index, env := range saveFlags.vars {
-			iv, ip, ik := getByteIndex(env, '='), getByteIndex(env, '#'), len(env)
+		var resultVars = make([]ResultVar, len(saveFlags.vars))
 
-			vars[index].Var = env[:iv]
-			vars[index].Path = env[iv+1 : ip]
-			vars[index].Key = env[ip+1 : ik]
+		for index, rawVar := range saveFlags.vars {
+			// Var=Path#Key
+			iv, ip, ik := getByteIndex(rawVar, '='), getByteIndex(rawVar, '#'), len(rawVar)
+
+			// exit if provided var is incompliete
+			if len(rawVar) <= ip+1 {
+				log.Fatal("unrecognized variable format, required var=path#key")
+			}
+
+			resultVars[index] = ResultVar{
+				Name: rawVar[:iv],
+				Path: rawVar[iv+1 : ip],
+				Key:  rawVar[ip+1 : ik],
+			}
 		}
 
-		// fetch values
-		for i, v := range vars {
+		// get Values
+		for i, v := range resultVars {
 			result := PersistentState.client.Read(v.Path, v.Key)
 
+			// print warnings if there are some
 			if len(result.Warnings) != 0 {
 				for _, warning := range result.Warnings {
 					log.Println(warning)
 				}
 			}
 
+			// exit with error if there's one
 			if result.Error != nil {
 				log.Fatal(result.Error)
 			}
 
-			vars[i].Value = result.Value
+			// assign value
+			resultVars[i].Value = result.Value
+			resultVars[i].Lease = result.LeaseID
 		}
 
-		// prepare result string
+		// extract result string
+		// export Var="Value"
 		var result string
-		for _, v := range vars {
-			result += fmt.Sprintf("export %s=\"%s\"\n", v.Var, v.Value)
-		}
+		for _, v := range resultVars {
+			result += fmt.Sprintf("export %s=\"%s\"\n", v.Name, v.Value)
 
-		if saveFlags.out == "" {
-			// write to stdout if output file path is not provided
-
-			fmt.Print(result)
-		} else {
-			// write to file otherwise
-
-			err := ioutil.WriteFile(saveFlags.out, []byte(result), 0740)
-			if err != nil {
-				log.Fatal(err)
+			if saveFlags.saveLeases && v.Lease != "" {
+				result += fmt.Sprintf("export %s_LEASE=\"%s\"\n", v.Name, v.Lease)
 			}
 		}
+
+		fmt.Print(result)
 	},
 }
