@@ -43,18 +43,29 @@ type ReadResult struct {
 }
 
 // getSecretDataKey extracts a key as a string from a given secret
-func (client Client) getSecretDataKey(secret *api.Secret, key string) (string, error) {
-	secrets, ok := secret.Data["data"].(map[string]interface{})
-	if !ok {
-		return "", fmt.Errorf("could not cast secret data to map[string]interface{}")
+func (client Client) getSecretDataKey(secret *api.Secret, key []string) (string, error) {
+	var intermediate = secret.Data
+
+	for i, k := range key {
+		if i == len(key)-1 {
+			value, ok := intermediate[k].(string)
+
+			if !ok {
+				return "", fmt.Errorf(`could not cast secret key "%s" to string`, key)
+			}
+
+			return value, nil
+		}
+
+		m, ok := intermediate[k].(map[string]interface{})
+		if !ok {
+			return "", fmt.Errorf("could not cast secret data to map[string]interface{}")
+		}
+
+		intermediate = m
 	}
 
-	value, ok := secrets[key].(string)
-	if !ok {
-		return "", fmt.Errorf(`could not cast secret key "%s" to string`, key)
-	}
-
-	return value, nil
+	return "", nil
 }
 
 // SetToken is used to set auth token
@@ -73,7 +84,7 @@ func (client Client) Auth(path string, data map[string]interface{}) (string, err
 }
 
 // Read is used to read secrets
-func (client Client) Read(path string, key string) ReadResult {
+func (client Client) Read(path string, key []string) ReadResult {
 	secret, err := client.api.Logical().Read(path)
 	if err != nil {
 		return ReadResult{"", nil, err, ""}
@@ -86,4 +97,18 @@ func (client Client) Read(path string, key string) ReadResult {
 	value, err := client.getSecretDataKey(secret, key)
 
 	return ReadResult{value, secret.Warnings, err, secret.LeaseID}
+}
+
+func (client Client) RenewLease(LeaseID string, increment int) error {
+	var payload = make(map[string]interface{})
+
+	payload["lease_id"] = LeaseID
+	payload["increment"] = increment
+
+	_, err := client.api.Logical().Write("/sys/leases/renew", payload)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

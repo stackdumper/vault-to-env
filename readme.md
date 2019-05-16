@@ -1,6 +1,5 @@
 # vault-to-env
-
-VTE reads secrets from Hashicorp Vault and outputs them as environment variables into stdout or file.
+VTE reads secrets from Hashicorp Vault and outputs them as environment variables.
 
 <br />
 
@@ -14,12 +13,13 @@ Usage:
   vte read [flags]
 
 Flags:
-  -h, --help           help for read
-      --save-leases    save secret leases
-      --vars strings   list of vars to read
+  -h, --help                 help for read
+      --lease-duration int   adjust secret lease duration
+      --save-leases          save secret leases
+      --vars strings         list of vars to read
 
 Global Flags:
-      --address string      Vault address (default "http://localhost:8200")
+      --address string      Vault address (default "http://vault.admin.e4f.cc")
       --auth-data strings   Vault auth data
       --auth-path string    Vault auth path
 ```

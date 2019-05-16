@@ -2,6 +2,7 @@ package command
 
 import (
 	"log"
+	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -19,7 +20,7 @@ var PersistentFlags struct {
 }
 
 func init() {
-	rootCmd.PersistentFlags().StringVar(&PersistentFlags.Address, "address", "http://localhost:8200", "Vault address")
+	rootCmd.PersistentFlags().StringVar(&PersistentFlags.Address, "address", os.Getenv("VAULT_ADDR"), "Vault address")
 	rootCmd.PersistentFlags().StringVar(&PersistentFlags.AuthPath, "auth-path", "", "Vault auth path")
 	rootCmd.PersistentFlags().StringSliceVar(&PersistentFlags.AuthData, "auth-data", []string{}, "Vault auth data")
 

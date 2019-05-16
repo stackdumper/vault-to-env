@@ -3,24 +3,31 @@ package command
 import (
 	"fmt"
 	"log"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
 var saveFlags struct {
-	vars       []string
-	saveLeases bool
+	vars          []string
+	leaseDuration int
+	saveLeases    bool
 }
 
 func init() {
 	saveCmd.Flags().StringSliceVar(&saveFlags.vars, "vars", []string{}, "list of vars to read")
+	saveCmd.Flags().IntVar(&saveFlags.leaseDuration, "lease-duration", 0, "adjust secret lease duration")
 	saveCmd.Flags().BoolVar(&saveFlags.saveLeases, "save-leases", false, "save secret leases")
 }
 
 type ResultVar struct {
 	// Input: "Name=Path#Key"
 	// Output: "export Name=Value"
-	Name, Path, Key, Value, Lease string
+	Name    string
+	Path    string
+	Value   string
+	LeaseID string
+	Key     []string
 }
 
 // Read secrets and output them as env variables
@@ -42,7 +49,7 @@ var saveCmd = &cobra.Command{
 			resultVars[index] = ResultVar{
 				Name: rawVar[:iv],
 				Path: rawVar[iv+1 : ip],
-				Key:  rawVar[ip+1 : ik],
+				Key:  strings.Split(rawVar[ip+1:ik], "."),
 			}
 		}
 
@@ -62,9 +69,18 @@ var saveCmd = &cobra.Command{
 				log.Fatal(result.Error)
 			}
 
+			if saveFlags.leaseDuration != 0 && result.LeaseID != "" {
+				// adjust lease
+				// https://www.vaultproject.io/docs/concepts/lease.html
+				err := PersistentState.client.RenewLease(result.LeaseID, saveFlags.leaseDuration)
+				if err != nil {
+					log.Fatal(result.Error)
+				}
+			}
+
 			// assign value
 			resultVars[i].Value = result.Value
-			resultVars[i].Lease = result.LeaseID
+			resultVars[i].LeaseID = result.LeaseID
 		}
 
 		// extract result string
@@ -73,8 +89,8 @@ var saveCmd = &cobra.Command{
 		for _, v := range resultVars {
 			result += fmt.Sprintf("export %s=\"%s\"\n", v.Name, v.Value)
 
-			if saveFlags.saveLeases && v.Lease != "" {
-				result += fmt.Sprintf("export %s_LEASE=\"%s\"\n", v.Name, v.Lease)
+			if saveFlags.saveLeases && v.LeaseID != "" {
+				result += fmt.Sprintf("export %s_LEASE_ID=\"%s\"\n", v.Name, v.LeaseID)
 			}
 		}
 
