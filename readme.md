@@ -1,4 +1,5 @@
 # vault-to-env
+A tool for converting Hashicorp Vault secrets to environment variables and manipulating them.
 
 ![Current Release](https://img.shields.io/github/release/stackdumper/vault-to-env.svg)
 ![Build](https://img.shields.io/docker/cloud/build/stackdumper/vault-to-env.svg)
@@ -8,7 +9,7 @@
 
 ## Usage
 
-#### Read
+### `read`
 Read secrets and output them as env variables
 
 ```
@@ -27,7 +28,7 @@ Global Flags:
   --auth-path string    Vault auth pat
 ```
 
-#### Renew
+### `renew`
 Renew secrets leases
 
 ```
