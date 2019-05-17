@@ -14,18 +14,17 @@ var PersistentState struct {
 }
 
 var PersistentFlags struct {
-	Address  string
-	AuthPath string
-	AuthData []string
+	Address   string
+	AuthPath  string
+	AuthData  []string
+	AuthToken string
 }
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(&PersistentFlags.Address, "address", os.Getenv("VAULT_ADDR"), "Vault address")
 	rootCmd.PersistentFlags().StringVar(&PersistentFlags.AuthPath, "auth-path", "", "Vault auth path")
 	rootCmd.PersistentFlags().StringSliceVar(&PersistentFlags.AuthData, "auth-data", []string{}, "Vault auth data")
-
-	rootCmd.MarkFlagRequired("auth-path")
-	rootCmd.MarkFlagRequired("auth-data")
+	rootCmd.PersistentFlags().StringVar(&PersistentFlags.AuthToken, "auth-token", os.Getenv("VAULT_TOKEN"), "Vault auth token")
 }
 
 // root command
@@ -33,6 +32,10 @@ var rootCmd = &cobra.Command{
 	Use:   "vte",
 	Short: "A tool to manipulate for saving and manipulating secrets from Hashicorp Vault",
 	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+		if (PersistentFlags.AuthPath == "" || len(PersistentFlags.AuthData) == 0) && PersistentFlags.AuthToken == "" {
+			log.Fatal("either auth-path and auth-data or auth-token must be provided")
+		}
+
 		// parse auth data into map[string]interface{}
 		var authData = make(map[string]interface{})
 		for _, v := range PersistentFlags.AuthData {

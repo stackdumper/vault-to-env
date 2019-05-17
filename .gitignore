@@ -16,3 +16,4 @@
 
 # VSCode config
 .vscode
+.tests
