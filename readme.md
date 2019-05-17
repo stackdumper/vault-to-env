@@ -1,5 +1,8 @@
 # vault-to-env
-VTE reads secrets from Hashicorp Vault and outputs them as environment variables.
+
+![Current Release](https://img.shields.io/github/release/stackdumper/vault-to-env.svg)
+![Build](https://img.shields.io/docker/cloud/build/stackdumper/vault-to-env.svg)
+![License](https://img.shields.io/github/license/stackdumper/vault-to-env.svg)
 
 <br />
 
