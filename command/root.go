@@ -56,13 +56,14 @@ var rootCmd = &cobra.Command{
 			log.Fatal(err)
 		}
 
-		// authenticate
-		token, err := client.Auth(PersistentFlags.AuthPath, authData)
-		if err != nil {
-			log.Fatal(err)
+		var token = PersistentFlags.AuthToken
+		if token == "" {
+			// authenticate
+			token, err = client.Auth(PersistentFlags.AuthPath, authData)
+			if err != nil {
+				log.Fatal(err)
+			}
 		}
-
-		// set token
 		client.SetToken(token)
 
 		// save client
