@@ -1,7 +1,3 @@
-# === INSTALL CERTS STAGE === #
-FROM alpine:latest as certs
-RUN apk --update add ca-certificates
-
 # === BUILD STAGE === #
 FROM golang:1.12-alpine as build
 
@@ -18,10 +14,8 @@ COPY . .
 RUN go build -ldflags="-w -s" -o build
 
 # === RUN STAGE === #
-FROM scratch as run
+FROM alpine as run
 
 WORKDIR /srv/app
-COPY --from=certs /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
-COPY --from=build /srv/app/build /srv/app/build
 
 ENTRYPOINT ["/srv/app/build"]
