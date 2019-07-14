@@ -9,6 +9,7 @@ A tool for converting Hashicorp Vault secrets to environment variables and manip
 
 ## Usage
 
+
 ### `read`
 Read secrets and output them as env variables
 
@@ -122,6 +123,20 @@ $ go run main.go revoke \
     --auth-data password=tester \
     --leases $MONGO_USER_LEASE_ID \
     --leases $MONGO_PASS_LEASE_ID
+```
+
+<br />
+
+## Docker
+
+Docker image is available on Docker Hub as `stackdumper/vault-to-env`.
+```
+docker run -t stackdumper/vault-to-env \
+    read \
+    --auth-path /auth/userpass/login/tester \
+    --auth-data password=tester \
+    --vars FOO=/secret/data/hello#foo \
+    --vars EXCITED=/secret/data/hello#excited \
 ```
 
 <br />
