@@ -17,5 +17,6 @@ RUN go build -ldflags="-w -s" -o build
 FROM alpine as run
 
 WORKDIR /srv/app
+COPY --from=build /srv/app/build /srv/app/build
 
 ENTRYPOINT ["/srv/app/build"]
