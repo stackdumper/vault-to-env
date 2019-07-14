@@ -46,6 +46,23 @@ Global Flags:
   --auth-token string   Vault auth token
 ```
 
+### `revoke`
+Revoke secrets leases
+
+```
+Usage:
+  vte revoke [flags]
+
+Flags:
+  --leases stringArray   list leases to revoke
+
+Global Flags:
+  --address string      Vault address
+  --auth-data strings   Vault auth data
+  --auth-path string    Vault auth path
+  --auth-token string   Vault auth token
+```
+
 <br />
 
 ## Examples
@@ -97,6 +114,14 @@ $ go run main.go renew \
     --leases $MONGO_USER_LEASE_ID \
     --leases $MONGO_PASS_LEASE_ID \
     --duration 9000
+
+
+# revoke MongoDB credentials leases
+$ go run main.go revoke \
+    --auth-path /auth/userpass/login/tester \
+    --auth-data password=tester \
+    --leases $MONGO_USER_LEASE_ID \
+    --leases $MONGO_PASS_LEASE_ID
 ```
 
 <br />

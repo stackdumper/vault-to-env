@@ -17,3 +17,6 @@
 # VSCode config
 .vscode
 .tests
+
+# gox output
+build

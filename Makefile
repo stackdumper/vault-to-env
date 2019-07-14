@@ -8,4 +8,4 @@ test:
 
 .PHONY: build
 build:
-	echo "TODO"
+	gox -output=build/vte_{{.OS}}_{{.Arch}}

@@ -112,3 +112,16 @@ func (client Client) RenewLease(LeaseID string, increment int) error {
 
 	return nil
 }
+
+func (client Client) RevokeLease(LeaseID string) error {
+	var payload = make(map[string]interface{})
+
+	payload["lease_id"] = LeaseID
+
+	_, err := client.api.Logical().Write("/sys/leases/revoke", payload)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

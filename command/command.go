@@ -9,6 +9,7 @@ import (
 func Run() {
 	rootCmd.AddCommand(saveCmd)
 	rootCmd.AddCommand(renewCmd)
+	rootCmd.AddCommand(revokeCmd)
 
 	if err := rootCmd.Execute(); err != nil {
 		fmt.Println(err)
