@@ -132,7 +132,7 @@ $ go run main.go revoke \
 Docker image is available on Docker Hub as `stackdumper/vault-to-env`.
 ```
 docker run -t stackdumper/vault-to-env \
-    read \
+    vte read \
     --auth-path /auth/userpass/login/tester \
     --auth-data password=tester \
     --vars FOO=/secret/data/hello#foo \

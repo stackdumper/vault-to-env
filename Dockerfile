@@ -19,4 +19,6 @@ FROM alpine as run
 WORKDIR /srv/app
 COPY --from=build /srv/app/build /srv/app/build
 
-ENTRYPOINT ["/srv/app/build"]
+RUN alias vte="/srv/app/build"
+
+ENTRYPOINT ["/bin/sh"]
