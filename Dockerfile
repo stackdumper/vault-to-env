@@ -17,8 +17,6 @@ RUN go build -ldflags="-w -s" -o build
 FROM alpine as run
 
 WORKDIR /srv/app
-COPY --from=build /srv/app/build /srv/app/build
+COPY --from=build /srv/app/build /usr/local/bin/vte
 
-RUN alias vte="/srv/app/build"
-
-ENTRYPOINT ["/bin/sh"]
+ENTRYPOINT ["/bin/sh", "-c"]
