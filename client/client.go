@@ -9,7 +9,8 @@ import (
 // Client is the core of vault-to-env
 // responsible for communication with Vault and other app logic
 type Client struct {
-	api *api.Client
+	api   *api.Client
+	cache map[string]*api.Secret
 }
 
 // Config is used to parameterize Client
@@ -20,17 +21,18 @@ type Config struct {
 
 // NewClient is used to create a new Client
 func NewClient(config *Config) (*Client, error) {
-	api, err := api.NewClient(&api.Config{
+	client, err := api.NewClient(&api.Config{
 		Address: config.VaultAddress,
 	})
 	if err != nil {
 		return nil, err
 	}
 
-	api.SetToken(config.VaultToken)
+	client.SetToken(config.VaultToken)
 
 	return &Client{
-		api: api,
+		api:   client,
+		cache: make(map[string]*api.Secret),
 	}, nil
 }
 
@@ -85,10 +87,17 @@ func (client Client) Auth(path string, data map[string]interface{}) (string, err
 
 // Read is used to read secrets
 func (client Client) Read(path string, key []string) ReadResult {
-	secret, err := client.api.Logical().Read(path)
-	if err != nil {
-		return ReadResult{"", nil, err, ""}
+	// prevent multiple requests to the same path
+	if _, ok := client.cache[path]; !ok {
+		secret, err := client.api.Logical().Read(path)
+		if err != nil {
+			return ReadResult{"", nil, err, ""}
+		}
+
+		client.cache[path] = secret
 	}
+
+	secret := client.cache[path]
 
 	if secret == nil {
 		return ReadResult{"", nil, fmt.Errorf("could not find a secret on path %s", path), ""}
